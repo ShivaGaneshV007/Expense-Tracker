@@ -13,11 +13,14 @@ import SignUp from "./pages/Auth/SignUp";
 import Home from "./pages/Dashboard/Home";
 import Income from "./pages/Dashboard/Income";
 import Expense from "./pages/Dashboard/Expense"; // ✅ Fixed
+import UserProvider from "./context/userContext";
 
 
 const App = () => {
   return (
-    <Router>
+    <UserProvider>
+      <div>
+      <Router>
       <Routes>
         {/* Redirect root to login if no Root component */}
         <Route path="/" element={<Root />} />
@@ -29,6 +32,8 @@ const App = () => {
         <Route path="/expense" element={<Expense />} /> 
       </Routes>
     </Router>
+    </div>
+    </UserProvider>
   );
 };
 

@@ -1,22 +1,35 @@
 import React, { useState } from "react";
-import AuthLayout from "../../components/layouts/AuthLayout";
 import { Link, useNavigate } from "react-router-dom";
+
+// Components & Layouts
+import AuthLayout from "../../components/layouts/AuthLayout";
 import Input from "../../components/Inputs/Input";
-import { validateEmail, validatePassword } from "../../utils/helper";
 import ProfilePhotoSelector from "../../components/inputs/ProfilePhotoSelector";
+
+// Utils & Helpers
+import { validateEmail, validatePassword } from "../../utils/helper";
+
+import { API_PATHS } from "../../utils/ApiPaths";
+import axiosInstance from "../../utils/axiosInstance";
+import { UserContext } from "../../context/userContext";
+import { useContext } from "react";
+
+
 const SignUp = () => {
   const [profilePic, setProfilePic] = useState(null);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Separate error states
+  // Error states
   const [fullNameError, setFullNameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [generalError, setGeneralError] = useState(null);
 
+  const { updateUser } = useContext(UserContext);
   const navigate = useNavigate();
+  
 
   const handleSignUp = async (e) => {
     e.preventDefault();
@@ -32,23 +45,51 @@ const SignUp = () => {
       setFullNameError("Full name is required.");
       valid = false;
     }
-
     if (!validateEmail(email)) {
       setEmailError("Please enter a valid email address.");
       valid = false;
     }
-
     const passwordErrors = validatePassword(password);
     if (passwordErrors.length > 0) {
       setPasswordError(passwordErrors.join(" "));
       valid = false;
     }
 
-    if (!valid) return;
+    if (!valid) {
+      return;
+    }
 
-    // TODO: API call here
-    console.log({ fullName, email, password });
-    // navigate("/login");
+    try {
+      let profileImageUrl = "";
+
+      // Step 1: Upload image if present
+      if (profilePic) {
+        const imgUploadRes = await uploadImage(profilePic);
+        profileImageUrl = imgUploadRes.imageUrl || "";
+      }
+
+      // Step 2: Register user with text data and image URL
+      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
+        fullName,
+        email,
+        password,
+        profileImageUrl, // Send the URL, not the file
+      });
+
+      const { token, user } = response.data;
+
+      if (token) {
+        localStorage.setItem("token", token);
+        updateUser(user);
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      if (error.response && error.response.data.message) {
+        setGeneralError(error.response.data.message);
+      } else {
+        setGeneralError("Something went wrong. Please try again.");
+      }
+    }
   };
 
   return (
