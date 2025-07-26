@@ -1,34 +1,50 @@
 import React, { useState } from "react";
-import AuthLayout from "../../components/layouts/AuthLayout"; // fixed import path (no space)
-import { useNavigate } from "react-router-dom";
-
-// Assuming you have an Input component, else you can replace with <input />
-import Input from "../../components/common/Input";
+import { useNavigate, Link } from "react-router-dom";
+import AuthLayout from "../../components/layouts/AuthLayout";
+import Input from "../../components/Inputs/Input";
+import { validateEmail ,validatePassword} from "../../utils/helper";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Separate error states for inputs
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [error, setError] = useState(null);
 
   const navigate = useNavigate();
 
-  // Handle Login Form Submit
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    // Simple validation example
-    if (!email || !password) {
-      setError("Please fill all fields");
-      return;
+    // Reset errors first
+    setEmailError("");
+    setPasswordError("");
+    setError(null);
+
+    let valid = true;
+
+    if (!validateEmail(email)) {
+      setEmailError("Please enter a valid email address.");
+      valid = false;
     }
 
+    if (!password) {
+      setError("Please enter a password.");
+      return;
+      valid=false;
+    }
+    valid = false;
+  
+
+    if (!valid) return;
+
     try {
-      // TODO: Add your login API call here
-      // Example:
+      // Replace with your real login API call
       // const response = await loginApi(email, password);
       // localStorage.setItem("token", response.token);
 
-      // For demo, navigate to dashboard on "success"
       navigate("/dashboard");
     } catch (err) {
       setError("Login failed. Please try again.");
@@ -45,28 +61,46 @@ const Login = () => {
 
         {error && <p className="text-red-600 mb-3">{error}</p>}
 
-        <form onSubmit={handleLogin}>
-          <Input
-            value={email}
-            onChange={({ target }) => setEmail(target.value)}
-            label="Email Address"
-            placeholder="john@example.com"
-            type="email"
-          />
-          <Input
-            value={password}
-            onChange={({ target }) => setPassword(target.value)}
-            label="Password"
-            placeholder="********"
-            type="password"
-          />
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <Input
+              value={email}
+              onChange={({ target }) => setEmail(target.value)}
+              label="Email Address"
+              placeholder="john@example.com"
+              type="email"
+            />
+            {emailError && (
+              <p className="text-red-600 text-xs mt-1 ml-1">{emailError}</p>
+            )}
+          </div>
+
+          <div>
+            <Input
+              value={password}
+              onChange={({ target }) => setPassword(target.value)}
+              label="Password"
+              placeholder="********"
+              type="password"
+            />
+            {passwordError && (
+              <p className="text-red-600 text-xs mt-1 ml-1">{passwordError}</p>
+            )}
+          </div>
 
           <button
             type="submit"
-            className="mt-4 w-full bg-purple-600 text-white py-2 rounded-md hover:bg-purple-700 transition"
+            className="mt-2 w-full bg-purple-600 text-white py-2 rounded-md hover:bg-purple-700 transition"
           >
             Log In
           </button>
+
+          <p className="text-sm text-center mt-4">
+            Don&apos;t have an account?{" "}
+            <Link className="text-blue-600 hover:underline" to="/signup">
+              Sign Up
+            </Link>
+          </p>
         </form>
       </div>
     </AuthLayout>

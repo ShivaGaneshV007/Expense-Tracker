@@ -1,3 +1,4 @@
+@import "tailwindcss";
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -40,3 +41,10 @@
 .read-the-docs {
   color: #888;
 }
+
+.btn-primary {
+  @apply w-full text-sm font-medium text-white bg-violet-500 shadow-lg shadow-violet-300 hover:bg-violet-600 transition rounded-md py-2;
+}
+
+
+

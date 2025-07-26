@@ -6,11 +6,14 @@ import {
   Navigate,
 } from "react-router-dom";
 
+import './App.css';
+
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
 import Home from "./pages/Dashboard/Home";
 import Income from "./pages/Dashboard/Income";
 import Expense from "./pages/Dashboard/Expense"; // ✅ Fixed
+
 
 const App = () => {
   return (
