@@ -9,3 +9,7 @@ const IncomeSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 module.exports = mongoose.model("Income", IncomeSchema);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 968ad80a28fbeed15db0b34d713dcd22ac0de8fc

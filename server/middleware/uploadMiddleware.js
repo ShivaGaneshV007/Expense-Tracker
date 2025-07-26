@@ -4,7 +4,11 @@ const multer = require('multer');
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, 'uploads/'),
     filename: (req, file, cb) => {
+<<<<<<< HEAD
         cb(null, `${Date.now()}-${file.originalname}`);
+=======
+       cb(null, `${Date.now()}-${file.originalname}`);
+>>>>>>> 968ad80a28fbeed15db0b34d713dcd22ac0de8fc
     }
 });
 
@@ -21,3 +25,8 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ storage, fileFilter });
 
 module.exports = upload;
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 968ad80a28fbeed15db0b34d713dcd22ac0de8fc
