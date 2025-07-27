@@ -8,31 +8,51 @@ import {
 
 const TransactionInfoCard = ({
   title,
-  icon,
+  icon, // This can be a URL string, or null/undefined for default icon
   date,
   amount,
   type,
   hideDeleteBtn,
-  onDelete, // Added onDelete prop for the delete button
+  onDelete,
 }) => {
-  // Helper function to get dynamic styles for the amount/type display
   const getAmountStyles = () => {
     if (type === "income") {
       return "bg-green-50 text-green-500";
     } else if (type === "expense") {
       return "bg-red-50 text-red-500";
     }
-    return ""; // Default or neutral style
+    return "";
+  };
+
+  // Function to check if the icon prop is likely a URL
+  const isUrl = (str) => {
+    try {
+      new URL(str);
+      return true;
+    } catch (e) {
+      return false;
+    }
   };
 
   return (
     <div className="group relative flex items-center gap-4 mt-2 p-3 rounded-lg hover:bg-gray-100/60 transition-colors duration-200">
       {/* Icon Container */}
       <div className="w-12 h-12 flex items-center justify-center text-xl text-gray-800 bg-gray-100 rounded-full">
-        {icon ? (
-          <img src={icon} alt={title} className="w-6 h-6 object-contain" />
+        {icon && typeof icon === 'string' && isUrl(icon) ? (
+          // If 'icon' is a string and looks like a URL, try to render it as an image
+          <img
+            src={icon}
+            alt={title}
+            className="w-6 h-6 object-contain"
+            onError={(e) => {
+              // Fallback to LuUtensils if image fails to load
+              e.target.style.display = 'none'; // Hide the broken image icon
+              e.target.parentNode.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" class="w-6 h-6"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>'; // Replace with LuUtensils SVG
+            }}
+          />
         ) : (
-          <LuUtensils />
+          // Otherwise, render LuUtensils as the default icon
+          <LuUtensils key="default-utensils-icon" />
         )}
       </div>
 
@@ -49,7 +69,7 @@ const TransactionInfoCard = ({
           {!hideDeleteBtn && (
             <button
               className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-              onClick={onDelete} // Use the onDelete prop here
+              onClick={onDelete}
               aria-label="Delete transaction"
             >
               <LuTrash2 size={18} />

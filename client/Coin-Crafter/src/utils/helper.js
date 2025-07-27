@@ -53,10 +53,11 @@ export const addThousandsSeparator = (num) => {
     : formattedInteger;
 };
 
-export const prepareExpenseBarChartData = (data = []) => {
-  const chartData = data.map((item) => ({
-    category: item?.category,
-    amount: item?.amount,
+export const prepareExpenseBarChartData = (transactions = []) => {
+  return transactions.map((t, index) => ({
+    ...t,
+    uniqueKey: `${t.category || 'No Category'}-${t._id || index}`,
+    amount: typeof t.amount === 'number' ? t.amount : parseFloat(t.amount) || 0 // Ensure amount is a number
   }));
-  return chartData;
 };
+
