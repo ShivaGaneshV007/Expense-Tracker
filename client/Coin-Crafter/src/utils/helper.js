@@ -1,3 +1,5 @@
+import moment from 'moment';
+
 export const validateEmail = (email) => {
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return regex.test(email);
@@ -61,3 +63,40 @@ export const prepareExpenseBarChartData = (transactions = []) => {
   }));
 };
 
+
+export const prepareIncomeBarChartData = (data = []) => {
+  // Sort income data by date in ascending order
+  const sortedData = [...data].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  const chartData = sortedData.map((item, index) => {
+    const date = item?.date ? moment(item.date) : null;
+    // Format date as "Do MMM" (e.g., "1st Feb", "25th Jul") for the X-axis label
+    const formattedDate = date && date.isValid() ? date.format('Do MMM') : `Invalid Date-${index}`;
+
+    return {
+      // Create uniqueKey in the format "FormattedDate-ID" for X-axis dataKey
+      uniqueKey: `${formattedDate}-${item._id || index}`,
+      amount: typeof item?.amount === 'number' ? item.amount : parseFloat(item?.amount) || 0,
+      // Map 'source' to 'category' so the existing CustomTooltip works correctly
+      category: item?.source || 'No Source',
+      // Keep original date for tooltip display
+      date: item?.date,
+      // Include original source as well if needed
+      source: item?.source,
+    };
+  });
+
+  return chartData;
+};
+
+export const prepareExpenseLineChartData = (data = []) => {
+  const sortedData = [...data].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  const chartData = sortedData.map((item) => ({
+    month: moment(item?.date).format('Do MMM'),
+    amount: item?.amount,
+    category: item?.category,
+  }));
+
+  return chartData;
+};
