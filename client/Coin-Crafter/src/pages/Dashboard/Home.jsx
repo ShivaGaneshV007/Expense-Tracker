@@ -1,5 +1,5 @@
 import React from 'react'
-import DashboardLayout from '../../components/Layouts/DashboardLayout';
+import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { useUserAuth } from '../../hooks/useUserAuth';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../utils/axiosInstance';
@@ -15,6 +15,7 @@ import FinancialOverview from '../../components/Dashboard/FinancialOverview';
 import ExpenseTransactions from '../../components/Dashboard/ExpenseTransactions';
 import Last30DaysExpenses from '../../components/Dashboard/Last30DaysExpenses';
 import RecentIncomeWithChart from '../../components/Dashboard/RecentIncomeWithChart';
+import RecentIncome from '../../components/Dashboard/RecentIncome';
 
 const Home = () => {
   useUserAuth();
@@ -96,6 +97,11 @@ const Home = () => {
           <RecentIncomeWithChart
             data={dashboardData?.last60DaysIncome?.transactions.slice(0,4)||[]}
             totalIncome={dashboardData?.totalIncome||0}
+          />
+
+          <RecentIncome
+            transactions={dashboardData?.last60DaysIncome?.transactions || []}
+            onSeeMore={()=> navigate("/income")}
           />
         </div>
       </div>

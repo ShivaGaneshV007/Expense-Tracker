@@ -11,9 +11,10 @@ import './App.css';
 import Login from "./pages/Auth/Login";
 import SignUp from "./pages/Auth/SignUp";
 import Home from "./pages/Dashboard/Home";
-import Income from "./pages/Dashboard/Income";
+import Income from "./pages/Dashboard/income";
 import Expense from "./pages/Dashboard/Expense"; 
 import UserProvider from "./context/userContext";
+import { Toaster } from "react-hot-toast";
 
 
 const App = () => {
@@ -33,6 +34,14 @@ const App = () => {
       </Routes>
     </Router>
     </div>
+    <Toaster
+      toastOptions={{
+        className:"",
+        style:{
+          fontSize: '13px'
+        },
+      }}
+      />
     </UserProvider>
   );
 };
