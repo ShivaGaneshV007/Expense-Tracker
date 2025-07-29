@@ -1,57 +1,68 @@
-import React, { useContext, useEffect, useRef, useState } from "react";
-import { UserContext } from "../../context/userContext";
-import Navbar from "./Navbar";
-import SideMenu from "./SideMenu";
+// src/components/layouts/DashboardLayout.js
+
+import React, { useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { UserContext } from '../../context/userContext';
+import Navbar from './Navbar';
+import SideMenu from './SideMenu';
+import LogoutModal from '../Modals/LogoutModal.jsx';
 
 const DashboardLayout = ({ children, activeMenu }) => {
-  const { user } = useContext(UserContext);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Toggleable sidebar
-  const sidebarRef = useRef(null);
+  const [isMobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLogoutModalOpen, setLogoutModalOpen] = useState(false);
 
-  // Close sidebar on outside click
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target) &&
-        !event.target.closest(".toggle-sidebar-btn") // add this class to the toggle button
-      ) {
-        setIsSidebarOpen(false);
-      }
-    };
+  const { clearUser } = useContext(UserContext);
+  const navigate = useNavigate();
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  const handleLogout = () => {
+    localStorage.clear();
+    clearUser();
+    navigate('/login');
+    setLogoutModalOpen(false);
+  };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 w-full m-0 p-0">
-      <header className="fixed top-0 left-0 right-0 h-16 bg-white shadow-md z-50">
-        <Navbar activeMenu={activeMenu} toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
-      </header>
+    <div className="flex h-screen bg-gray-50">
+      {/* --- Desktop Sidebar (Fixed) --- */}
+      <div className="hidden lg:block lg:w-64 lg:flex-shrink-0">
+        <SideMenu 
+          activeMenu={activeMenu} 
+          onLogoutClick={() => setLogoutModalOpen(true)} 
+        />
+      </div>
 
-      <div className="flex pt-16 min-h-screen w-full relative">
-        {/* Sidebar */}
-        <aside
-          ref={sidebarRef}
-          className={`bg-white border-r border-gray-200 m-0 p-0 transition-all duration-300
-            fixed md:static top-16 left-0 h-[calc(100vh-4rem)] z-40 w-64 
-            ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} md:translate-x-0`}
-        >
-          <SideMenu activeMenu={activeMenu} />
-        </aside>
+      {/* --- Mobile Sidebar (Overlay) --- */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-50">
+          <div className="fixed inset-0 bg-black opacity-50" onClick={() => setMobileMenuOpen(false)}></div>
+          <div className="relative z-10 w-64">
+            <SideMenu 
+              activeMenu={activeMenu} 
+              onLogoutClick={() => {
+                setMobileMenuOpen(false);
+                setLogoutModalOpen(true);
+              }} 
+            />
+          </div>
+        </div>
+      )}
 
-        {/* Main content */}
-        <main className="flex-grow p-6 overflow-visible w-full md:ml-64">
-          {user ? (
-            children
-          ) : (
-            <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] text-gray-600 text-lg">
-              Please login to access the dashboard.
-            </div>
-          )}
+      {/* --- Main Content --- */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Navbar 
+          onMenuButtonClick={() => setMobileMenuOpen(!isMobileMenuOpen)} 
+        />
+        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50">
+          {children}
         </main>
       </div>
+      
+      {/* --- Logout Confirmation Modal --- */}
+      <LogoutModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setLogoutModalOpen(false)}
+        onConfirm={handleLogout}
+      />
     </div>
   );
 };

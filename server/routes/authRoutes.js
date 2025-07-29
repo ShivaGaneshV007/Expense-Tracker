@@ -26,4 +26,14 @@ router.post("/upload-image", upload.single("profileImage"), (req, res) => {
     res.status(200).json({ imageUrl });
 });
 
+router.post('/verify-otp', (req, res) => {
+  const { email, otp } = req.body;
+  if (otpStore[email] === otp) {
+    delete otpStore[email]; // One-time use
+    res.json({ message: 'OTP verified' });
+  } else {
+    res.status(400).json({ message: 'Invalid OTP' });
+  }
+});
+
 module.exports = router;

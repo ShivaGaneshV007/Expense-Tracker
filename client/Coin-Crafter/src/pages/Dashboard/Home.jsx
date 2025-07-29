@@ -50,7 +50,7 @@ const Home = () => {
   
   return (
     <DashboardLayout activeMenu = "Dashboard">
-      <div className = "my-5 mx-auto">
+      <div className = "my-5 mx-px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <InfoCard
             icon={<IoMdCard />}

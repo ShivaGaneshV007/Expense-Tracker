@@ -25,4 +25,7 @@ export const API_PATHS = {
     IMAGE: {
         UPLOAD_IMAGE: "/api/v1/auth/upload-image",
     },
+    USER: {
+        UPDATE_PROFILE: "/api/v1/user/profile",
+    },
 };

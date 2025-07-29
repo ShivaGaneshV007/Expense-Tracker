@@ -18,7 +18,7 @@
         <CustomPieChart
           data={balanceData}
           label="Total Balance"
-          totalAmount={`$${totalBalance}`}
+          totalAmount={`₹${totalBalance}`}
           colors={COLORS}
           showTextAnchor
         />

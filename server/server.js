@@ -55,6 +55,10 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/income", incomeRoutes);
 app.use("/api/v1/expense", expenseRoutes);
 app.use("/api/v1/dashboard", dashboardRoutes);
+// server.js
+
+// This line MUST have the '/api/user' prefix
+app.use('/api/v1/user', require('./routes/userRoutes'));
 
 // Serve static files from the 'uploads' directory
 // This makes uploaded files accessible via a URL like http://localhost:5000/uploads/your-image.png

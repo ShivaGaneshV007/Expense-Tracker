@@ -1,174 +1,199 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+"use client"
 
-// Components & Layouts
-import AuthLayout from "../../components/layouts/AuthLayout";
-import Input from "../../components/Inputs/Input";
-import ProfilePhotoSelector from "../../components/inputs/ProfilePhotoSelector";
-
-// Utils & Helpers
-import { validateEmail, validatePassword } from "../../utils/helper";
-
-// Import the correct API paths and axios instance
-import { API_PATHS } from "../../utils/ApiPaths";
-import axiosInstance from "../../utils/axiosInstance";
-// Import the dedicated uploadImage utility
-import uploadImage from "../../utils/uploadImage"; // Correctly importing the image upload utility
-
-import { UserContext } from "../../context/userContext";
-import { useContext } from "react";
-
+import { useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import AuthLayout from "../../components/layouts/AuthLayout"
+import ProfilePhotoSelector from "../../components/inputs/ProfilePhotoSelector"
+import { validateEmail, validatePassword } from "../../utils/helper"
+import { API_PATHS } from "../../utils/ApiPaths"
+import axiosInstance from "../../utils/axiosInstance"
+import uploadImage from "../../utils/uploadImage"
+import { UserContext } from "../../context/userContext"
+import { useContext } from "react"
+import { LuUser, LuMail, LuLock, LuEye, LuEyeOff } from "react-icons/lu"
 
 const SignUp = () => {
-    const [profilePic, setProfilePic] = useState(null);
-    const [fullName, setFullName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
+  const [profilePic, setProfilePic] = useState(null)
+  const [fullName, setFullName] = useState("")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-    // Error states
-    const [fullNameError, setFullNameError] = useState("");
-    const [emailError, setEmailError] = useState("");
-    const [passwordError, setPasswordError] = useState("");
-    const [generalError, setGeneralError] = useState(null);
+  // Error states
+  const [fullNameError, setFullNameError] = useState("")
+  const [emailError, setEmailError] = useState("")
+  const [passwordError, setPasswordError] = useState("")
+  const [generalError, setGeneralError] = useState(null)
 
-    const { updateUser } = useContext(UserContext);
-    const navigate = useNavigate();
+  const { updateUser } = useContext(UserContext)
+  const navigate = useNavigate()
 
-    // The local uploadImage function definition has been removed from here,
-    // as it is now imported from "../../utils/uploadImage".
+  const handleSignUp = async (e) => {
+    e.preventDefault()
+    setIsLoading(true)
 
-    const handleSignUp = async (e) => {
-        e.preventDefault();
+    setFullNameError("")
+    setEmailError("")
+    setPasswordError("")
+    setGeneralError(null)
 
-        setFullNameError("");
-        setEmailError("");
-        setPasswordError("");
-        setGeneralError(null);
+    let valid = true
 
-        let valid = true;
+    if (!fullName.trim()) {
+      setFullNameError("Full name is required.")
+      valid = false
+    }
+    if (!validateEmail(email)) {
+      setEmailError("Please enter a valid email address.")
+      valid = false
+    }
+    const passwordErrors = validatePassword(password)
+    if (passwordErrors.length > 0) {
+      setPasswordError(passwordErrors.join(" "))
+      valid = false
+    }
 
-        if (!fullName.trim()) {
-            setFullNameError("Full name is required.");
-            valid = false;
-        }
-        if (!validateEmail(email)) {
-            setEmailError("Please enter a valid email address.");
-            valid = false;
-        }
-        const passwordErrors = validatePassword(password);
-        if (passwordErrors.length > 0) {
-            setPasswordError(passwordErrors.join(" "));
-            valid = false;
-        }
+    if (!valid) {
+      setIsLoading(false)
+      return
+    }
 
-        if (!valid) {
-            return;
-        }
+    try {
+      let profileImageUrl = ""
 
-        try {
-            let profileImageUrl = "";
+      if (profilePic) {
+        const imgUploadRes = await uploadImage(profilePic)
+        profileImageUrl = imgUploadRes.imageUrl || ""
+      }
 
-            // Step 1: Upload image if present using the imported utility function
-            if (profilePic) {
-                const imgUploadRes = await uploadImage(profilePic); // Using the imported uploadImage
-                profileImageUrl = imgUploadRes.imageUrl || ""; // Get the URL from the response
-            }
+      const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
+        fullName,
+        email,
+        password,
+        profileImageUrl,
+      })
 
-            // Step 2: Register user with text data and image URL
-            const response = await axiosInstance.post(API_PATHS.AUTH.REGISTER, {
-                fullName,
-                email,
-                password,
-                profileImageUrl, // Send the URL, not the file
-            });
+      const { token, user } = response.data
 
-            const { token, user } = response.data;
+      if (token) {
+        localStorage.setItem("token", token)
+        updateUser(user)
+        navigate("/dashboard")
+      }
+    } catch (error) {
+      console.error("Error during signup:", error)
+      if (error.response && error.response.data.message) {
+        setGeneralError(error.response.data.message)
+      } else {
+        setGeneralError("Something went wrong. Please try again.")
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
-            if (token) {
-                localStorage.setItem("token", token);
-                updateUser(user);
-                navigate("/dashboard");
-            }
-        } catch (error) {
-            console.error("Error during signup:", error); // Log the full error for debugging
-            if (error.response && error.response.data.message) {
-                setGeneralError(error.response.data.message);
-            } else {
-                setGeneralError("Something went wrong. Please try again.");
-            }
-        }
-    };
+  return (
+    <AuthLayout>
+      <div className="space-y-6">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">Create Account</h2>
+          <p className="text-slate-600">Join thousands of users managing their finances</p>
+        </div>
 
-    return (
-        <AuthLayout>
-            <div className="lg:w-[70%] h-3/4 md:h-full flex flex-col justify-center">
-                <h3 className="text-xl font-semibold text-black">Create an Account</h3>
-                <p className="text-xs text-slate-700 mt-[5px] mb-6">
-                    Join us today by entering your details below.
-                </p>
+        {generalError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl fade-in">
+            {generalError}
+          </div>
+        )}
 
-                {generalError && (
-                    <p className="text-red-600 mb-3">{generalError}</p>
-                )}
+        <form onSubmit={handleSignUp} className="space-y-5">
+          <div className="flex justify-center mb-6">
+            <ProfilePhotoSelector image={profilePic} setImage={setProfilePic} />
+          </div>
 
-                <form onSubmit={handleSignUp} className="space-y-4">
-                    <ProfilePhotoSelector image={profilePic} setImage={setProfilePic} />
-                    <div>
-                        <Input
-                            value={fullName}
-                            onChange={({ target }) => setFullName(target.value)}
-                            label="Full Name"
-                            placeholder="Shiva"
-                            type="text"
-                        />
-                        {fullNameError && (
-                            <p className="text-red-600 text-xs mt-1 ml-1">{fullNameError}</p>
-                        )}
-                    </div>
-
-                    <div>
-                        <Input
-                            value={email}
-                            onChange={({ target }) => setEmail(target.value)}
-                            label="Email Address"
-                            placeholder="john@example.com"
-                            type="email"
-                        />
-                        {emailError && (
-                            <p className="text-red-600 text-xs mt-1 ml-1">{emailError}</p>
-                        )}
-                    </div>
-
-                    <div>
-                        <Input
-                            value={password}
-                            onChange={({ target }) => setPassword(target.value)}
-                            label="Password"
-                            placeholder="********"
-                            type="password"
-                        />
-                        {passwordError && (
-                            <p className="text-red-600 text-xs mt-1 ml-1">{passwordError}</p>
-                        )}
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="mt-2 w-full bg-purple-600 text-white py-2 rounded-md hover:bg-purple-700 transition"
-                    >
-                        Sign Up
-                    </button>
-
-                    <p className="text-sm text-center mt-4">
-                        Already have an account?{" "}
-                        <Link to="/login" className="text-blue-600 hover:underline">
-                            Login
-                        </Link>
-                    </p>
-                </form>
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
+            <div className="relative">
+              <LuUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-lg" />
+              <input
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Enter your full name"
+                className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-300 text-slate-700"
+              />
             </div>
-        </AuthLayout>
-    );
-};
+            {fullNameError && <p className="text-red-500 text-sm mt-1 fade-in">{fullNameError}</p>}
+          </div>
 
-export default SignUp;
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
+            <div className="relative">
+              <LuMail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-lg" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-300 text-slate-700"
+              />
+            </div>
+            {emailError && <p className="text-red-500 text-sm mt-1 fade-in">{emailError}</p>}
+          </div>
+
+          <div className="space-y-1">
+            <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
+            <div className="relative">
+              <LuLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 text-lg" />
+              <input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Create a strong password"
+                className="w-full pl-10 pr-12 py-3 bg-white border border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all duration-300 text-slate-700"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                {showPassword ? <LuEyeOff size={18} /> : <LuEye size={18} />}
+              </button>
+            </div>
+            {passwordError && <p className="text-red-500 text-sm mt-1 fade-in">{passwordError}</p>}
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full btn-primary flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <>
+                <div className="loading-spinner"></div>
+                Creating Account...
+              </>
+            ) : (
+              "Create Account"
+            )}
+          </button>
+        </form>
+
+        <div className="text-center">
+          <p className="text-slate-600">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="text-indigo-600 hover:text-indigo-700 font-medium hover:underline transition-colors"
+            >
+              Sign In
+            </Link>
+          </p>
+        </div>
+      </div>
+    </AuthLayout>
+  )
+}
+
+export default SignUp
